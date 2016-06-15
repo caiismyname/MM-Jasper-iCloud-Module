@@ -12,6 +12,8 @@ from oauth2client import tools
 import re
 from pyicloud import PyiCloudService
 
+from time import sleep
+
 # For iCloud API
 api = PyiCloudService('davidcai2012@gmail.com','cilantroLime7.03')
 iphone = api.devices['cetbS6ENhf8TSwHWRSpwmcI8L3J+C3USnmt6gCjV05FdE2jKVT8dNeHYVNSUzmWV']
@@ -38,7 +40,10 @@ def isValid(text):
 
 def handle(text, mic, profile):
 	iphone.play_sound()
-	mic.say("Done")
+	mic.say("Sounding")
+
+	sleep(10)
+	googleInit()
 
 
 def googleInit():
@@ -56,11 +61,6 @@ def googleInit():
 
 	mailParseTrash()
 
-try:
-    import argparse
-    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
-except ImportError:
-	    flags = None
 
 def get_credentials():
     """Gets valid user credentials from storage.
@@ -97,14 +97,10 @@ def mailParseTrash():
 
     # Gets messages from apple that are unread
     results = service.users().messages().list(userId='me', q="from:noreply@insideicloud.icloud.com, is:unread").execute()
-    messages = results['messages']
-
-    for x in messages:
-    	xId = x['id']
-    	# Marks messages as read and in trash
-    	service.users().messages().modify(userId='me', id=xId, body={'addLabelIds':['TRASH'], 'removeLabelIds':['UNREAD', "INBOX"]}).execute()
-
-
-googleInit()
-
+    if 'messages' in results:
+    	emails = results['messages']
+    	for x in emails:
+	    	xId = x['id']
+	    	# Marks messages as read and in trash
+	    	service.users().messages().modify(userId='me', id=xId, body={'addLabelIds':['TRASH'], 'removeLabelIds':['UNREAD', "INBOX"]}).execute()
 
